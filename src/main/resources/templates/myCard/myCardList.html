@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no, initial-scale=1" />
+		<meta content="yes" name="apple-mobile-web-app-capable" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta content="telephone=no" name="format-detection" />
+		<title>我的银行卡</title>
+		<link rel="stylesheet" type="text/css" href="css/base.css" />
+		<script type="text/javascript" src="vendor/jquery-2.1.3.min.js"></script>
+		<script type="text/javascript" src="js/wx.js"></script>
+	</head>
+
+	<body>
+		<header class="wx-bar wx-bar-nav">
+			<a class="wx-action-back iconfont icon-zuojiantou wx-pull-left"></a>
+			<h1 class="wx-title">我的银行卡</h1>
+		</header>
+		<form id='mainForm' name='mainForm' method="post">
+			<input id="merchantNo" name="merchantNo" type="hidden" th:value="${merchantNo}" />
+			<input id="userId" name="userId" type="hidden" th:value="${userId}" />
+			<input id="mobile"  name="mobile" type="hidden" th:value="${mobile}" />
+		</form>
+		<div class="wx-content">
+			<div class="wx-tab-content">
+				<ul class="wx-formlist wx-cardList dk" id ="cardList">
+	
+					<li class="wkbox addCard" id ="addCard" style="display:none">
+						<div class="tl pl14" style="width: 70px;"><i class="wx-shizi"></i></div>
+						<div class="autoW tl cl3 f16">添加银行卡</div>
+					</li>
+				</ul>
+			</div>
+		</div>	
+		
+		<div class="alertMenu dkMenu">
+			<ul class="tc">
+				<!--<li>验证此卡</li>-->
+				<!-- <li class="changeCard">设为贷款卡</li> -->
+				<li class="deleteCard">删除</li>
+				<li class="close">取消</li>
+			</ul>
+		</div>
+		<div id="refuseModal" class="myModal" style="">
+			<div class="myModal-main">
+				<div class="tl text" style="padding: 40px 30px">
+					您还有未完成的授信或支用，请稍后再试
+				</div>
+				<div class="wkbox btn-box">
+					<div class="wx-btn wx-btnh close">确认</div>
+				</div>
+			</div>
+		</div>
+		<div id="confirmModal" class="myModal" style="">
+			<div class="myModal-main">
+				<div class="tl f14" style="padding: 40px 30px">
+					<div class="cl6 text"></div>
+				</div>
+				<div class="wkbox btn-box">
+					<div class="close wx-btn wx-btnh wx-active autoW">取消</div>
+					<div class="wx-btn wx-btnh autoW" onclick='deleteCard()'>确定</div>
+				</div>
+			</div>
+		</div>
+			
+	</body>
+	<script>
+		var creditAcctNo;//贷款卡号
+		var cardName,cardNo,currentCardNo,isCreditCard; //卡名,卡号(尾号),当前操作的卡,是否贷款卡
+		$(function() {		
+			$("#cardList").hide();
+			$("#addCard").hide();		
+			//获取当前贷款卡
+			$.ajax({
+				url : "ajaxGetCreditCard",
+				type : "POST",
+				async : false,
+				data : {
+					userId : $("#userId").val().trim()
+				},
+				dataType : "json",
+				success : function(data, textStatus) {								
+					if (data.isSuccess== "true") {	
+						var prodAcct = data.response.prodAcct;
+						if(prodAcct){
+							creditAcctNo = prodAcct.acctNo;
+						}					
+						console.log(creditAcctNo);
+					}
+				},
+				error : function(XMLHttpRequest, textStatus, errorThrown) {
+					alert("服务器连接错误，请稍候重试");
+				}
+			});	
+			
+			//获取的银行卡列表
+			$.ajax({
+				url : "ajaxGetCardList",
+				type : "POST",
+				async : false,
+				data : {
+					userId : $("#userId").val().trim()
+				},
+				dataType : "json",
+				success : function(data, textStatus) {										
+					if (data.isSuccess== "true") {						
+						var cardJsonList = data.response.bindedCards;
+						console.log(cardJsonList);
+						$.each(cardJsonList, function(index, cardJson){ 
+						   var bankIdenName = cardJson.bankIdenName;	
+						   var acctNo = cardJson.acctNo;
+						   var bankIdenCode = cardJson.bankIdenCode;
+							//console.log(bankIdenName+bankIdenCode+acctNo);
+							 var appendHtml = '<li class="wkbox bj" id="'+ acctNo +'">' +
+								'<div class="bankLogo-img icon-'+bankIdenCode+'" id="iconImage"></div>'+
+								'<div class="autoW tl pl12">'+
+								'<div class="cl9 f12 cardName">'+bankIdenName+'</div>'+
+								'<div class="cl3 f18 mt4 cardNo">尾号'+acctNo.slice(-4)+'</div>'+
+								'</div>'+
+								'<div class="isCreditCard f12 clc"></div>'+
+								'<div class="f12 cllan">编辑</div>'+
+								'</li>';	 										
+							
+							$("#cardList").prepend(appendHtml);						
+							if(acctNo==creditAcctNo){
+								$("#"+acctNo+" > .isCreditCard").html("当前贷款卡&emsp;");
+							}																			
+						});
+																																					
+						$("#cardList").show();		 															
+					    $("#addCard").show();
+					}
+				},
+				error : function(XMLHttpRequest, textStatus, errorThrown) {
+					alert("服务器连接错误，请稍候重试");
+				}
+			});		
+			
+		
+		$('.wx-cardList.dk li.bj:not(".addCard")').on('click',function(){
+			currentCardNo=$(this).attr('id');
+			cardName = $(this).find('.cardName').html();
+			cardNo = $(this).find('.cardNo').html();
+			if($(this).find('.isCreditCard').text()){
+				isCreditCard=true;
+			}else{
+				isCreditCard=false;
+			}
+			$('.dkMenu').show();
+		});
+			
+		$('#refuseModal .close').click(function(){
+			$('#refuseModal').hide();
+		});
+		$('#confirmModal .close').click(function(){
+			$('#confirmModal').hide();
+		});
+		$('.alertMenu .close').click(function(){
+			$('.alertMenu').hide();
+		});
+		
+		$('.alertMenu .deleteCard').click(function(){
+			//如果是贷款卡需要判断是否可以删除,不是贷款卡直接删除
+			var deleteFlag = false;
+			if(isCreditCard){
+				//获取当前贷款卡
+				$.ajax({
+					url : "ajaxCheckCreditCard",
+					type : "POST",
+					async : false,
+					data : {
+						userId : $("#userId").val().trim(),
+						bankAcctNo:currentCardNo
+					},
+					dataType : "json",
+					success : function(data, textStatus) {								
+						if (data.isSuccess== "true") {	
+							if(data.passCheck=="Y"){
+								deleteFlag = true;
+							}					
+						}
+					},
+					error : function(XMLHttpRequest, textStatus, errorThrown) {
+						alert("服务器连接错误，请稍候重试");
+					}
+				});	
+				if (!deleteFlag) {
+					$('.alertMenu').hide();
+					$('#refuseModal .text').html('您还有未完成的授信或支用，请稍后再试');
+					$('#refuseModal').show();
+					return false;
+				}
+			}			
+			$('#confirmModal .text').html('是否确认删除'+cardName+'('+cardNo+')'+'的银行卡？');
+			$('.alertMenu').hide();
+			$('#confirmModal').show();
+			//window.location='账户-卡资产.html'
+		});	
+		
+	})	
+	
+	//删卡
+	function deleteCard(){
+		$('#confirmModal').hide();
+		//ajax调用删卡	
+		$.ajax({
+			url : "ajaxDeleteBankCard",
+			type : "POST",
+			async : false,
+			data : {
+				userId : $("#userId").val().trim(),
+				acctNo:currentCardNo,
+				isCreditCard:isCreditCard
+			},
+			dataType : "json",
+			success : function(data, textStatus) {								
+				if (data.isSuccess== "true") {			
+					//成功后
+					$("#"+currentCardNo).remove();
+				}else{
+					alert("删除失败,请稍后重试")
+				}
+			},
+			error : function(XMLHttpRequest, textStatus, errorThrown) {
+				alert("服务器连接错误，请稍候重试");
+			}
+		});	
+		//alert(isCreditCard);		
+	}
+		
+	//绑卡		
+	$("#addCard").click(function(){
+		$('#mainForm').attr("action", "goBindCard").submit();		
+	})	
+	</script>
+</html>
