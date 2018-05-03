@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no, initial-scale=1" />
+		<meta content="yes" name="apple-mobile-web-app-capable" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta content="telephone=no" name="format-detection" />
+		<title>贷款申请</title>
+		<link rel="stylesheet" type="text/css" href="css/base.css" />
+		<link href="vendor/mui/css/mui.listpicker.css" rel="stylesheet" />
+		<link href="vendor/mui/css/mui.poppicker.css" rel="stylesheet" />
+	</head>
+	<body>
+		<header class="wx-bar wx-bar-nav">
+			<a class="wx-action-back iconfont icon-zuojiantou wx-pull-left"></a>
+			<h1 class="wx-title">贷款申请</h1>
+		</header>
+		<div class="fixBottom bgf fh1 pb20">
+			<div class="wx-btn wx-btnh" onclick="submitForm()">下一步</div>
+		</div>
+		<div class="wx-content">
+			<div class="wx-step-line">
+				<!-- steps 步骤 current 当前步骤 -->
+				<ul data-steps="基本信息,补充信息,贷款信息,申请提交" data-current="2"></ul>
+			</div>
+			<form id="myForm" name='myForm' action="" method="post">
+				<input type="hidden" name="creditReqStr" id="creditReqStr" th:value='${creditReqStr}' />
+				<input type="hidden" name="bankName" id="bankName" th:value='${creditReq.bankName}' />
+				<input type="hidden" name="bankCode" id="bankCode" th:value='${creditReq.bankCode}' />
+				<input type="hidden" name="bankAcctNo" id="bankAcctNo" th:value='${creditReq.bankAcctNo}' />
+				<ul class="wx-formlist mt20">
+					<li class="">
+						<div class="cl0 mb20">紧急联系人1</div>
+						<div class="wkbox"><div class="tl cl9">姓名</div>
+							<div class="autoW tr cl3c wx-input-group">
+								<input type="text" id="emerName1" name="emerName1" placeholder="" maxlength="20" value="" />
+							</div>
+						</div>
+					</li>
+					<li class="wkbox" >
+						<div class="tl cl9">手机号</div>
+						<div class="autoW tr cl3c wx-input-group">
+							<input type="tel" id="emerPhone1" name="emerPhone1" placeholder="" maxlength="11" value="" />
+						</div>
+					</li>
+					<li class="">
+						<div class="wkbox wx-navigate-right">
+							<div class="tl cl9">与本人关系</div>
+							<div class="autoW tr cl3c wx-input-group">
+								<span class="wx-form-text">请选择</span>
+								<select id="emerRel1" name="emerRel1" class="wx-select">
+									<option value="">请选择</option>
+									<option value="0">配偶</option>
+									<option value="1">父母</option>
+									<option value="2">子女</option>
+								</select>
+							</div>
+						</div>
+					</li>
+					<li class="">
+						<div class="cl0 mb20">紧急联系人2</div>
+						<div class="wkbox"><div class="tl cl9">姓名</div>
+							<div class="autoW tr cl3c wx-input-group">
+								<input type="text" id="emerName2" name="emerName2" placeholder="" maxlength="20" value="" />
+							</div>
+						</div>
+					</li>
+					<li class="wkbox" >
+						<div class="tl cl9">手机号</div>
+						<div class="autoW tr cl3c wx-input-group">
+							<input type="tel" id="emerPhone2" name="emerPhone2" placeholder="" maxlength="11" value="" />
+						</div>
+					</li>
+					<li class="">
+						<div class="wkbox wx-navigate-right">
+							<div class="tl cl9">与本人关系</div>
+							<div class="autoW tr cl3c wx-input-group">
+								<span class="wx-form-text">请选择</span>
+								<select id="emerRel2" name="emerRel2" class="wx-select">
+									<option value="">请选择</option>
+									<option value="0">配偶</option>
+									<option value="1">父母</option>
+									<option value="2">子女</option>
+								</select>
+							</div>
+						</div>
+					</li>
+					<li class="">
+						<div class="cl0 mb20">紧急联系人3(选填)</div>
+						<div class="wkbox"><div class="tl cl9">姓名</div>
+							<div class="autoW tr cl3c wx-input-group">
+								<input type="text" id="emerName3" name="emerName3" placeholder="" maxlength="20" value="" />
+							</div>
+						</div>
+					</li>
+					<li class="wkbox" >
+						<div class="tl cl9">手机号</div>
+						<div class="autoW tr cl3c wx-input-group">
+							<input type="tel" id="emerPhone3" name="emerPhone3" placeholder="" maxlength="11" value="" />
+						</div>
+					</li>
+					<li class="">
+						<div class="wkbox wx-navigate-right">
+							<div class="tl cl9">与本人关系</div>
+							<div class="autoW tr cl3c wx-input-group">
+								<span class="wx-form-text">请选择</span>
+								<select id="emerRel3" name="emerRel3" class="wx-select">
+									<option value="">请选择</option>
+									<option value="0">配偶</option>
+									<option value="1">父母</option>
+									<option value="2">子女</option>
+								</select>
+							</div>
+						</div>
+					</li>
+				</ul>
+			</form>
+		</div>
+		<div class="wx-tips-noAlert">
+			<div style="width: 80px; height: 80px; position: absolute; top: 50%; left: 50%; -webkit-transform: translate(-50%, -50%);">
+				<img style="width: 100%; opacity: .8;" src="images/loading.gif" />
+			</div>
+		</div>
+		<script type="text/javascript" src="vendor/jquery-2.1.3.min.js" ></script>
+		<script type="text/javascript" src="js/wx.js"></script>
+		<script type="text/javascript">
+			window.onload=function(){
+	   			$('.wx-tips-noAlert').hide();
+	   		};	
+   			
+			var phoneRegex = /^\-?[0-9]{11}$/;
+			//<![CDATA[
+			function submitForm() {
+				if ($('#emerName1').val() == '') {
+					alert('请输入紧急联系人1的姓名');
+					return false;
+				}
+				if ($('#emerPhone1').val() == ''||$('#emerPhone1').val().length!=11) {
+					alert('请输入正确的紧急联系人1的手机号');
+					return false;
+				}
+				if ($('#emerRel1').val() == '') {
+					alert('请选择与紧急联系人1的关系');
+					return false;
+				}
+				if ($('#emerName2').val() == '') {
+					alert('请输入紧急联系人2的姓名');
+					return false;
+				}
+				if ($('#emerPhone2').val() == ''||$('#emerPhone2').val().length!=11) {
+					alert('请输入正确的紧急联系人2的手机号');
+					return false;
+				}
+				if ($('#emerRel2').val() == '') {
+					alert('请选择与紧急联系人2的关系');
+					return false;
+				}
+				if($('#emerName3').val() =="" && $('#emerPhone3').val() =="" && $('#emerRel3').val() ==""){
+					//do-nothing
+				}else if ($('#emerName3').val() !="" && $('#emerPhone3').val() !="" && $('#emerRel3').val() !=""){
+					//do-nothing
+				}else{
+					alert('请输入完整紧急联系人3的信息');
+					return false;
+				}
+				if ($('#emerName1').val() == $('#emerName2').val()) {
+					alert('紧急联系人的姓名不能重复');
+					return false;
+				}else if ($('#emerName1').val() == $('#emerName3').val()) {
+					alert('紧急联系人的姓名不能重复');
+					return false;
+				}else if ($('#emerName2').val() == $('#emerName3').val()) {
+					alert('紧急联系人的姓名不能重复');
+					return false;
+				}
+				if ($('#emerPhone1').val() == $('#emerPhone2').val()) {
+					alert('紧急联系人的手机号不能重复');
+					return false;
+				}else if ($('#emerPhone1').val() == $('#emerPhone3').val()) {
+					alert('紧急联系人的手机号不能重复');
+					return false;
+				}else if ($('#emerPhone2').val() == $('#emerPhone3').val()) {
+					alert('紧急联系人的手机号不能重复');
+					return false;
+				}
+      		   $("#myForm").attr("action", "applyThird");
+      		   $("#myForm").submit();
+			}
+			//]]>
+		</script>
+	</body>
+</html>
